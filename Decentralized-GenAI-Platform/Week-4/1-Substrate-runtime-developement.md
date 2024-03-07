@@ -25,6 +25,7 @@ Creating a Polkadot Substrate runtime involves a series of steps that guide you 
 
 ### 2. Create a New Substrate Chain
 
+
 - Use the Substrate Developer Hub Node Template as a starting point for your new chain.
 
   ```
@@ -32,6 +33,8 @@ Creating a Polkadot Substrate runtime involves a series of steps that guide you 
   cd substrate-node-template
   cargo build --release
   ```
+
+For detailed description of building a local node, refer https://docs.substrate.io/tutorials/build-a-blockchain/build-local-blockchain/
 
 ### 3. Explore the Substrate Node Template
 

@@ -23,11 +23,13 @@ Developing a custom pallet for a decentralized application using Substrate is a 
 
 ### Step 2: Creating the Voting Pallet
 
-1. **Generate Pallet Skeleton**: Use the Substrate pallet template to generate a skeleton for your voting pallet.
+1. **Pallet Skeleton**: Use the floowing Substrate pallet template to generate your voting pallet.
 
-   ```bash
-   substrate pallet new voting --template=https://github.com/substrate-developer-hub/substrate-pallet-template
-   ```
+https://github.com/substrate-developer-hub/substrate-node-template/tree/main/pallets/template
+
+Refere to this guide:
+https://github.com/substrate-developer-hub/substrate-node-template/tree/main?tab=readme-ov-file#pallets
+
 
 2. **Add Dependencies**: Open `pallets/voting/Cargo.toml` and add necessary dependencies. You might need dependencies like `frame-support` and `frame-system`.
 
