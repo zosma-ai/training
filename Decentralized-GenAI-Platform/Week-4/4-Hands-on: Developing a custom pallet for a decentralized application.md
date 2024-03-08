@@ -31,15 +31,55 @@ Refere to this guide:
 https://github.com/substrate-developer-hub/substrate-node-template/tree/main?tab=readme-ov-file#pallets
 
 
+
 2. **Add Dependencies**: Open `pallets/voting/Cargo.toml` and add necessary dependencies. You might need dependencies like `frame-support` and `frame-system`.
 
-3. **Define Pallet Configuration Trait**: In `pallets/voting/src/lib.rs`, define the configuration trait for your pallet. This includes specifying the types for events and any other configuration needed.
+3. **Define Pallet Configuration Trait**: Modify `pallets/voting/src/lib.rs`, 
+
+```
+#[frame_support::pallet]
+pub mod pallet {
+	use super::*;
+	use frame_support::pallet_prelude::*;
+	use frame_system::pallet_prelude::*;
+
+	#[pallet::pallet]
+	pub struct Pallet<T>(_);
+   ...
+}
+```
+
+The frame_support::pallet macro is part of the FRAME (Framework for Runtime Aggregation of Modularized Entities) framework, which is a set of libraries and tools for building blockchain runtimes in Rust, particularly for the Substrate blockchain framework. FRAME is designed to make it easier to develop secure, efficient, and modular blockchain systems. The pallet macro plays a crucial role in this ecosystem by providing a declarative way to define a pallet's components, including storage items, events, errors, and callable functions, among other things.
+
+The statement use super::*; in Rust is used within a module to import all items (functions, types, constants, etc.) from the parent module into the current module's scope. This allows for convenient access to the parent module's public items without needing to prefix them with the module's name each time they are used.
+
+Purpose of use frame_support::pallet_prelude::*;
+
+The purpose of this statement is to bring into scope a predefined set of types, traits, and macros from the frame_support::pallet_prelude module. These are essential for defining pallets, which are modular units of logic in the Substrate runtime.
+
+The pallet_prelude typically includes but is not limited to:
+
+   Commonly used FRAME macros such as #[pallet::constant] and #[pallet::extra_constants] for defining constants in a pallet.
+   Traits like MaybeSerializeDeserialize, Member, and FullCodec that are often used for type constraints in pallet storage.
+   Utilities for handling weights and transactions, like Weight and DispatchResult.
+   Other foundational types and traits necessary for pallet developm
+
+While the exact contents can evolve over time with the development of FRAME, typically, frame_system::pallet_prelude::* might include:
+
+   Traits like Origin, Config, and Call, which are essential for defining the pallet's configuration, origin of calls, and dispatchable functions.
+   Types related to block information (BlockNumber, Hash), account data (AccountId, AccountInfo), and system events.
+
+Define the configuration trait for your pallet. This includes specifying the types for events and any other configuration needed.
 
    ```rust
-   #[pallet::config]
-   pub trait Config: frame_system::Config {
-       type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-   }
+	#[pallet::config]
+	pub trait Config: frame_system::Config {
+		/// Because this pallet emits events, it depends on the runtime's definition of an event.
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		/// Type representing the weight of this pallet
+		type WeightInfo: WeightInfo;
+	}
+
    ```
 
 ### Step 3: Implementing the Pallet Logic
