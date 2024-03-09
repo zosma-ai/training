@@ -141,14 +141,36 @@ Let's persist our tasks to a file. We'll save our tasks in a file when the progr
            }
        }
 
-       Ok(tasks
-
-)
+       Ok(tasks)
    }
    ```
 
 3. Update your `main` function to call `load_tasks` at the start and `save_tasks` before exiting.
 
+    ```rust
+    fn main() {
+        let args: Vec<String> = env::args().collect();
+        let mut tasks = load_tasks().unwrap();
+
+        if args.len() > 1 {
+            match args[1].as_str() {
+                "add" => {
+                    if args.len() < 3 {
+                        println!("Usage: rust_todo add <task description>");
+                    } else {
+                        let description = args[2..].join(" ");
+                        add_task(&mut tasks, description);
+                        save_tasks(&tasks);
+                    }
+                }
+                "list" => list_tasks(&tasks),
+                _ => println!("Unknown command"),
+            }
+        } else {
+            println!("Usage: rust_todo <command> [arguments]");
+        }
+    }
+    ```
 ## Step 6: Handling Marking Tasks as Done
 
 Add functionality to mark tasks as done:

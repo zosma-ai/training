@@ -175,9 +175,7 @@ enum Direction {
 
 fn move_direction(dir: Direction) {
     match dir {
-        Direction
-
-::Up => println!("Moving up!"),
+        Direction::Up => println!("Moving up!"),
         Direction::Down => println!("Moving down!"),
         Direction::Left => println!("Moving left!"),
         Direction::Right => println!("Moving right!"),

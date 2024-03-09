@@ -22,17 +22,6 @@ Rust is designed to provide memory safety and help developers create fast, concu
 - **Error Handling**: Rust's approach to error handling is explicit and encourages handling errors in a way that ensures they're addressed through the use of `Result` and `Option` types.
 - **Macros**: Rust macros allow for metaprogramming, letting developers write code that writes other code, which is especially useful for reducing boilerplate.
 
-## Getting Started with Rust
-
-To start with Rust, you'll need to install the Rust toolchain. The recommended way to do this is through `rustup`, which manages Rust versions and associated tools. Once installed, you can create a new project with Cargo, Rust's package manager and build system:
-
-```sh
-cargo new hello_world
-cd hello_world
-cargo run
-```
-
-This will create a new Rust project called `hello_world`, compile it, and run the resulting executable, which will print "Hello, world!" to the console.
 
 ## Conclusion
 
