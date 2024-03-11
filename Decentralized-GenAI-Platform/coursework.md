@@ -43,7 +43,7 @@ Designing a course that focuses on using Rust for the back-end development of a 
 - Hands-on: Developing a custom pallet for a decentralized application
 
 #### Week 5: Foundations of Generative AI
-- Overview of Generative AI models: GANs, VAEs, Transformers
+- Overview of Open Source Generative AI models LLMs CLIP Latent Diffusion
 - AI model training and inference basics
 - Challenges in decentralized AI training and inference
 - Hands-on: Training a simple AI model

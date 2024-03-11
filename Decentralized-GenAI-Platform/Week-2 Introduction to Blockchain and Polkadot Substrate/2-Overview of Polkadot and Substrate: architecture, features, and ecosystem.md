@@ -54,3 +54,47 @@ Substrate serves as the backbone for a variety of blockchains, both within and o
 ## Conclusion
 
 Polkadot and Substrate represent a significant evolution in the blockchain landscape, offering the tools and infrastructure necessary for building the next generation of decentralized applications. By addressing key issues such as interoperability, scalability, and upgradability, they provide a solid foundation for developers looking to innovate within the decentralized space. Whether you're developing a specialized blockchain for a specific use case or a project aiming to connect different blockchain ecosystems, Polkadot and Substrate offer a comprehensive platform to bring your vision to life.
+
+# Major modules of Polkadot and Substrate
+
+Picking apart the entire core building blocks of Polkadot and Substrate in a single response can be quite dense due to their complexity and extensiveness. However, I'll provide an overview and walk you through some of the core concepts and components that define these powerful platforms.
+
+### Polkadot
+
+Polkadot is a next-generation blockchain protocol connecting multiple specialized blockchains into a unified network. It's designed to enable a completely decentralized web where users are in control. Polkadot's core building blocks include:
+
+1. **Relay Chain**: The central chain of Polkadot, responsible for the network's security, consensus, and cross-chain interoperability.
+
+2. **Parachains**: Sovereign blockchains that can have their own tokens and optimize their functionality for specific use cases. They feed into the Relay Chain.
+
+3. **Parathreads**: Similar to parachains but with a pay-as-you-go model. They are more economical for blockchains that don't need continuous connectivity to the network.
+
+4. **Bridges**: Specialized parachains or parathreads that connect Polkadot to other blockchain networks, allowing for interoperability and cross-chain transfers.
+
+5. **Consensus Mechanisms**: Polkadot uses a Nominated Proof of Stake (NPoS) mechanism for securing the network and achieving consensus across different chains.
+
+### Substrate
+
+Substrate is a blockchain development framework enabling developers to create purpose-built blockchains by composing custom or pre-built components. Core building blocks of Substrate include:
+
+1. **FRAME (Framework for Runtime Aggregation of Modularized Entities)**: FRAME provides a set of libraries and tools for developing runtime modules (pallets), which encapsulate specific blockchain functionality.
+
+   - **Pallets**: Reusable components that encapsulate specific functionality (e.g., balances, staking). Developers can compose these pallets to build their blockchain's runtime.
+   
+   - **Runtime**: The state transition function of a Substrate blockchain, defining the business logic. It's composed of various pallets.
+
+2. **Wasm (WebAssembly) Runtime Execution**: Substrate uses Wasm to enable blockchain upgradability without hard forks. The runtime is compiled to Wasm and can be hot-swapped on a live blockchain.
+
+3. **libp2p Networking**: Substrate uses the libp2p network library for peer-to-peer networking, facilitating communication between nodes in a Substrate-based blockchain network.
+
+4. **Storage**: Substrate provides a flexible storage API that supports efficient data storage, retrieval, and mutation. It's optimized for trie-based storage to enable fast state proofs.
+
+5. **Transaction Pool**: Manages the pool of transactions that have been broadcast but not yet included in a block. It's responsible for ordering and deduplicating pending transactions.
+
+6. **Consensus Engines**: Substrate supports pluggable consensus engines, allowing blockchains to choose the algorithm that best fits their needs. Notable examples include BABE (Block Authorship By Elected leaders), GRANDPA (GHOST-based Recursive ANcestor Deriving Prefix Agreement), and Aura.
+
+
+### Conclusion
+
+Polkadot's architecture with the Relay Chain, Parachains, and Bridges, alongside Substrate's modular framework with pallets, runtime, and consensus engines, offers a rich set of tools for building decentralized applications and interoperable blockchains. This tutorial only scratches the
+
