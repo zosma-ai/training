@@ -18,12 +18,12 @@ This course introduces the principles and applications of Generative AI, focusin
    - Applications and implications of Generative AI
 
 2. **Fundamentals of Machine Learning**
-   - Review of machine learning concepts
+   - Review of machine learning concepts that use discriminative models
    - Introduction to neural networks
    - Overview of deep learning frameworks (TensorFlow, PyTorch)
 
 3. **Generative Models Basics**
-   - Introduction to generative vs. discriminative models
+   - Introduction to generative AI models
    - Overview of variational autoencoders (VAEs)
    - Introduction to Generative Adversarial Networks (GANs)
 

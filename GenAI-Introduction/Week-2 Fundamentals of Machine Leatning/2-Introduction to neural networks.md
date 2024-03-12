@@ -421,3 +421,218 @@ In this loop:
 - `optimizer.step()` updates the parameters based on the current gradients.
 
 Optimizers are crucial in guiding the training of neural networks towards convergence. By efficiently navigating the complex, high-dimensional landscapes of model parameters versus loss, they find paths to minimize the loss function, thus improving the model's predictions. Experimenting with different optimizers and their parameters (like learning rate) can significantly impact the performance and training speed of neural networks.
+
+# Tutorial: Building a Fully Connected Deep Neural Network with PyTorch
+
+A Fully Connected Deep Neural Network (DNN), often just called a Deep Neural Network, consists of multiple layers where each neuron in a layer is connected to all neurons in the previous layer. These networks are powerful tools for a wide range of machine learning tasks, including regression and classification. In this tutorial, we'll build a fully connected DNN for a classification task using PyTorch, a popular deep learning library.
+
+## Getting Started with PyTorch
+
+Ensure you have PyTorch installed in your environment. If not, you can install it via pip:
+
+```bash
+pip install torch torchvision
+```
+
+## Step 1: Understanding the Dataset
+
+For demonstration purposes, we'll use the MNIST dataset, which consists of 28x28 pixel images of handwritten digits (0-9). Our goal is to build a model that can correctly classify these images.
+
+First, let's load the dataset. PyTorch's `torchvision` package makes this easy:
+
+```python
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
+# Transform the data to torch tensors and normalize it 
+transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+
+# Download and load training data
+trainset = datasets.MNIST('', download=True, train=True, transform=transform)
+trainloader = DataLoader(trainset, batch_size=64, shuffle=True)
+
+# Download and load test data
+testset = datasets.MNIST('', download=True, train=False, transform=transform)
+testloader = DataLoader(testset, batch_size=64, shuffle=False)
+```
+
+## Step 2: Defining the Model
+
+A fully connected network, also known as a Multilayer Perceptron (MLP), consists of one input layer, several hidden layers, and one output layer. Each layer is fully connected to the next layer. We will use PyTorch's `nn.Module` to define our model:
+
+```python
+import torch
+from torch import nn
+import torch.nn.functional as F
+
+class FullyConnectedNN(nn.Module):
+    def __init__(self):
+        super(FullyConnectedNN, self).__init__()
+        # Input layer (28*28 = 784 inputs corresponding to each pixel)
+        self.fc1 = nn.Linear(28*28, 128) # First hidden layer with 128 neurons
+        self.fc2 = nn.Linear(128, 64)    # Second hidden layer with 64 neurons
+        # Output layer (10 outputs corresponding to each digit)
+        self.fc3 = nn.Linear(64, 10)
+    
+    def forward(self, x):
+        # Flatten the input tensor
+        x = x.view(x.shape[0], -1)
+        
+        # Apply ReLU activations to the hidden layers
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        
+        # Apply a log softmax to the output layer
+        x = F.log_softmax(self.fc3(x), dim=1)
+        
+        return x
+```
+
+## Step 3: Training the Model
+
+To train the model, we need to define an optimizer and a loss function. We'll use the Adam optimizer and the negative log likelihood loss, which works well with the log softmax activation from the output layer.
+
+```python
+from torch import optim
+
+# Instantiate the model, loss function, and optimizer
+model = FullyConnectedNN()
+criterion = nn.NLLLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.003)
+
+# Training loop
+epochs = 15
+for e in range(epochs):
+    running_loss = 0
+    for images, labels in trainloader:
+        
+        # Zero the gradients
+        optimizer.zero_grad()
+        
+        # Forward pass
+        output = model(images)
+        loss = criterion(output, labels)
+        
+        # Backward pass and optimize
+        loss.backward()
+        optimizer.step()
+        
+        running_loss += loss.item()
+    else:
+        print(f"Training loss: {running_loss/len(trainloader)}")
+```
+
+## Step 4: Evaluating the Model
+
+After training, we evaluate the model's performance on the test dataset:
+
+```python
+correct = 0
+total = 0
+with torch.no_grad():
+    for images, labels in testloader:
+        output = model(images)
+        _, predicted = torch.max(output.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+```
+
+## Conclusion
+
+In this tutorial, we built a fully connected deep neural network using PyTorch for the classification of MNIST handwritten digits. This process involved loading and preprocessing the dataset, defining the model, training the model, and evaluating its performance. Fully connected networks are foundational in deep learning and provide a
+
+
+# Tutorial: Understanding CNNs and U-Net Architecture
+
+Convolutional Neural Networks (CNNs) and the U-Net architecture are pivotal in the field of computer vision, especially in tasks like image classification, object detection, and semantic segmentation. This tutorial will guide you through the fundamentals of CNNs, introduce the U-Net architecture, and show how to implement a simple U-Net in PyTorch.
+
+## Part 1: Convolutional Neural Networks (CNNs)
+
+### What is a CNN?
+
+A CNN is a deep learning algorithm that can take an input image, assign importance (learnable weights and biases) to various aspects/objects in the image, and differentiate one from the other. The preprocessing required in a CNN is much lower as compared to other classification algorithms.
+
+### Key Components of CNNs
+
+- **Convolutional Layer**: The core building block that applies a convolution operation to the input, passing the result to the next layer. It helps the network in focusing on small regions of the input image.
+
+- **Activation Function**: Introduces non-linearity into the network, allowing it to learn complex patterns. ReLU (Rectified Linear Unit) is commonly used.
+
+- **Pooling Layer**: Reduces the spatial size of the representation, speeding up the computation and reducing the number of parameters.
+
+- **Fully Connected Layer**: Each neuron in this layer is connected to all neurons in the previous layer, typically used at the end of the network to classify the features extracted by convolutional layers and downsampled by pooling layers.
+
+### How CNNs Work
+
+1. **Input Image**: Feeds the raw pixel data of the image into the model.
+2. **Convolution**: Extracts features from the input image using filters/kernels.
+3. **Activation**: Applies a non-linear activation function, like ReLU, to introduce non-linear properties to the system.
+4. **Pooling**: Reduces the spatial dimensions (width, height) of the input volume for the next convolutional layer.
+5. **Fully Connected Layer**: Uses the features extracted by the convolutional layers and downsampled by the pooling to classify the image into various classes based on the training dataset.
+
+## Part 2: U-Net Architecture
+
+### Introduction to U-Net
+
+U-Net is a type of CNN designed for fast and precise segmentation of images. It's named U-Net because of its U-shaped architecture. It was originally developed for biomedical image segmentation but has since been adopted for various image segmentation tasks.
+
+### Structure of U-Net
+
+The U-Net architecture is divided into two paths: 
+1. **Contracting Path (Encoder)**: Captures the context in the image. It consists of convolutional layers followed by max-pooling layers to reduce the spatial dimensions.
+2. **Expansive Path (Decoder)**: Enables precise localization using transposed convolutions. This path increases the spatial dimensions of the output.
+
+### Skip Connections
+
+One of the key features of U-Net is the use of skip connections that connect the encoder path to the decoder path. These connections help in recovering the spatial context lost during downsampling.
+
+## Implementing a Simple U-Net in PyTorch
+
+Let's implement a simplified version of U-Net for educational purposes.
+
+### Setting Up
+
+First, ensure you have PyTorch installed:
+
+```bash
+pip install torch torchvision
+```
+
+### U-Net Implementation
+
+```python
+import torch
+import torch.nn as nn
+
+class UNet(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(UNet, self).__init__()
+        
+        self.encoder = nn.Sequential(
+            nn.Conv2d(in_channels, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            # Add more layers as needed
+        )
+        
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(64, out_channels, kernel_size=2, stride=2),
+            # Add more layers as needed
+        )
+        
+        self.final_conv = nn.Conv2d(out_channels, out_channels, kernel_size=1)
+        
+    def forward(self, x):
+        x1 = self.encoder(x)
+        x2 = self.decoder(x1)
+        out = self.final_conv(x2)
+        return out
+```
+
+This code defines a very basic structure of U-Net for demonstration purposes. Real-world applications often require a more complex structure, including multiple layers in both the encoder and decoder paths and implementing skip connections to combine features from the encoder path with the upsampled features in the decoder path.
+
+### Conclusion
+
+This tutorial provided an overview of CNNs, introduced the U-Net architecture, and demonstrated how to implement a basic U-Net in PyTorch. U-Net's design, particularly its use of skip connections, makes it effective for tasks requiring precise localization, such as image segmentation. As with any deep learning model, the effectiveness
