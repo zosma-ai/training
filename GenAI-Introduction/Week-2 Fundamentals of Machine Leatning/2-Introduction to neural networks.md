@@ -636,3 +636,63 @@ This code defines a very basic structure of U-Net for demonstration purposes. Re
 ### Conclusion
 
 This tutorial provided an overview of CNNs, introduced the U-Net architecture, and demonstrated how to implement a basic U-Net in PyTorch. U-Net's design, particularly its use of skip connections, makes it effective for tasks requiring precise localization, such as image segmentation. As with any deep learning model, the effectiveness
+
+# FAQ
+
+## How pytorch loss backward function knows location of parameters ?
+
+In PyTorch, the `.backward()` method, when called on a loss tensor, computes the gradient of the loss with respect to all parameters in the model that are set to require gradients. The way PyTorch knows the location of these parameters and their gradients involves several key concepts in its design:
+
+### Autograd and Computational Graph
+
+- **Autograd**: PyTorch's autograd system automatically calculates the gradients of tensors. It keeps track of all operations performed on tensors that have their `requires_grad` attribute set to `True`. This tracking is done in a data structure known as a computational graph.
+- **Computational Graph**: A computational graph is a directed acyclic graph where nodes represent tensors, and edges represent functions that produce output tensors from input tensors (e.g., mathematical operations, layer computations). This graph is dynamic in PyTorch, meaning it is created from scratch at each iteration, allowing for flexibility in model architecture.
+
+### How `.backward()` Works
+
+- When an operation is performed on tensors, PyTorch creates a grad_fn for each resulting tensor. This grad_fn knows how to compute the derivative of the operation with respect to its inputs.
+- The `.backward()` method starts from the tensor it is called on (usually the loss tensor) and traverses the computational graph in reverse order (from outputs to inputs), applying the chain rule to compute gradients along the way.
+- Each parameter tensor in the model that requires gradients will have accumulated its gradient with respect to the loss after the `.backward()` pass is complete.
+
+### Parameter Registration
+
+- **Model Parameters**: In PyTorch, models are typically defined by subclassing `nn.Module`. Within this class, parameters (instances of `nn.Parameter`) and modules (instances of `nn.Module`) are automatically registered when assigned as attributes of the class.
+- **Requires Grad**: Parameters of the model are automatically set to require gradients (`requires_grad=True`) unless explicitly stated otherwise. This means they participate in the autograd process and will have their gradients computed during the `.backward()` call.
+
+### Gradient Accumulation
+
+- **Location of Parameters**: PyTorch keeps track of where parameters are in the computational graph. When `.backward()` is called, gradients are computed for these parameters and stored in their `.grad` attribute. Since parameters are registered within the model, accessing their gradients is straightforward after the backward pass.
+
+### Summary
+
+The autograd system and the dynamic computational graph are central to how PyTorch's `.backward()` function knows the location of model parameters and computes their gradients. The design allows for an efficient and flexible way to automate gradient computation, which is crucial for the optimization and training of neural networks.
+
+## Relation between loss funciton and optimizer ?
+
+In PyTorch, the loss function itself doesn't directly locate or interact with the optimizer. Instead, the connection between the loss function and the optimizer occurs through the gradients computed during backpropagation and the explicit passing of model parameters to the optimizer. Here's how the workflow typically unfolds:
+
+1. **Model Parameters Registration**: When you define a model by subclassing `torch.nn.Module`, all parameters (weights and biases) of the model that require gradients are automatically registered. These parameters are accessible via `model.parameters()`.
+
+2. **Optimizer Initialization**: You explicitly tell the optimizer which parameters it should work with. This is typically done by passing `model.parameters()` to the optimizer when you instantiate it. For example:
+   ```python
+   optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+   ```
+   Here, `model.parameters()` passes all the trainable parameters of the model to the optimizer.
+
+3. **Loss Computation**: During the forward pass, your model makes predictions based on its current parameters, and you calculate the loss by comparing these predictions against the true labels using a loss function.
+
+4. **Backpropagation**: By calling `.backward()` on the loss tensor, gradients are computed for all tensors (parameters) in the model that have `requires_grad=True`. This step doesn't involve the optimizer directly; it merely calculates and stores the gradients in the parameters' `.grad` attributes.
+
+5. **Optimization Step**: After backpropagation, the optimizer updates the model parameters based on the gradients. This is where the optimizer uses the information it was given during initialization (`model.parameters()`) to locate the parameters and their gradients. The optimizer step is explicitly called by the user:
+   ```python
+   optimizer.step()
+   ```
+   During this step, the optimizer adjusts the parameters to minimize the loss by using the gradients stored in `.grad`.
+
+6. **Gradient Zeroing**: Before the next iteration begins, gradients are usually zeroed out to prevent accumulation from the previous iterations:
+   ```python
+   optimizer.zero_grad()
+   ```
+   This is necessary because by default, gradients accumulate in PyTorch.
+
+In summary, the optimizer locates the parameters (and their gradients) through the explicit linking during its initialization. The loss function's role is to compute the loss value and facilitate the gradient computation via backpropagation, but it does not directly interact with the optimizer. The connection between the loss and the optimizer is mediated through the model's parameters and their gradients.
