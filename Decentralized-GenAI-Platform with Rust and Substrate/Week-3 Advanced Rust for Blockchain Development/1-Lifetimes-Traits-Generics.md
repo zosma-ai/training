@@ -137,7 +137,8 @@ Here, `'a: 'b` indicates that `'a` is at least as long as `'b`.
 2. **Struct Lifetime Exercise**: Define a struct `Text<'a>` that holds a slice of `&'a str` and implement a method `new(text: &'a str) -> Self`.
 3. **Advanced Pattern Exercise**: Given two string slices, write a function `select_longest<'a, 'b: 'a>(x: &'a str, y: &'b str) -> &'a str` that selects the longest of two string slices, ensuring the lifetimes are correctly annotated.
 
-### Solutions
+<details>
+<summary> Solutions </summary>
 
 1. **Elision Solution**:
 
@@ -169,6 +170,8 @@ fn select_longest<'a, 'b: 'a>(x: &'a str, y: &'b str) -> &'a str {
     if x.len() > y.len() { x } else { y }
 }
 ```
+
+</details>
 
 By working through these exercises and reviewing the solutions, you'll deepen your understanding of Rust's lifetime features, which is essential for mastering safe and efficient Rust programming.
 
