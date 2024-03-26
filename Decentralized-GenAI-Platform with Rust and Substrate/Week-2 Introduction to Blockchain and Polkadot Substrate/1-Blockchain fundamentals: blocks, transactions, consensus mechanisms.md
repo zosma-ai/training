@@ -66,6 +66,10 @@ Several other consensus mechanisms exist, such as Proof of Authority (PoA), Proo
 
 Blockchain technology's core components—blocks, transactions, and consensus mechanisms—create a secure, decentralized system for recording transactions. Understanding these fundamentals is the first step toward grasping the broader implications of blockchain for finance, supply chain management, digital identity, and beyond. As the technology evolves, new applications and improvements to consensus mechanisms continue to emerge, broadening the potential impact of blockchain across various industries.
 
+## Polkadot sbstrate documentation
+https://docs.substrate.io/learn/welcome-to-substrate/
+
+
 # Code walk through of Polkadot Block and Transactions
 https://github.com/paritytech/polkadot-sdk/blob/1c435e91c117b877c803427a91c0ccd18c527382/substrate/primitives/runtime/src/generic/block.rs#L85
 

@@ -62,7 +62,7 @@ In a neural network, each artificial neuron performs a similar function, taking 
 
 By understanding neurons from both a biological and computational perspective, we gain a deeper appreciation for the complexity of the human brain and the elegance of artificial neural networks. While simplified, artificial neurons capture the essence of neuronal function and communication, allowing us to build powerful models that can learn from and make predictions about data, mirroring our brain's ability to learn and make decisions.
 
-
+---
 # Weights and Biases in Neural Networks
 
 In the world of artificial neural networks (ANNs), the concepts of weights and biases are fundamental. They play a critical role in shaping the network's ability to learn from data and make accurate predictions or classifications. This tutorial will provide an intuitive explanation of weights and biases, delving into how they function and why they are crucial for neural networks.
@@ -132,7 +132,7 @@ As generative AI models grow in size, from millions to billions of parameters, t
 
 Weights and biases are the cornerstone of neural networks, enabling them to learn from data and make intelligent decisions. Understanding how to manipulate these parameters effectively is crucial for anyone looking to delve into the field of machine learning and artificial intelligence. As we continue to explore and expand the capabilities of neural networks, especially in the realm of generative AI, the principles of weights and biases remain at the heart of these technological advancements.
 
-
+---
 # Activation Functions
 
 In the realm of neural networks, activation functions play a pivotal role in determining the output of neural nodes. They introduce non-linear properties to the network, enabling it to learn complex patterns in the data. This tutorial will explore three fundamental activation functions: ReLU (Rectified Linear Unit), Sigmoid, and Tanh (Hyperbolic Tangent), providing an intuitive understanding of each.
@@ -210,7 +210,7 @@ print("Test Outputs:", test_outputs)
 
 Activation functions are vital for neural networks to model complex relationships in the data. By understanding and selecting the right activation function, you can enhance your neural network's learning capability and performance.
 
-
+---
 # Loss Functions
 
 Loss functions, also known as cost functions or objective functions, measure how well a machine learning model performs by comparing the model's predictions with the actual data. They are a critical component in training neural networks, providing a quantifiable indication of model accuracy that can be minimized during the training process. This tutorial will cover several common loss functions used in PyTorch and provide intuitive explanations for each.
@@ -428,6 +428,7 @@ In this loop:
 
 Optimizers are crucial in guiding the training of neural networks towards convergence. By efficiently navigating the complex, high-dimensional landscapes of model parameters versus loss, they find paths to minimize the loss function, thus improving the model's predictions. Experimenting with different optimizers and their parameters (like learning rate) can significantly impact the performance and training speed of neural networks.
 
+---
 # Tutorial: Building a Fully Connected Deep Neural Network with PyTorch
 
 A Fully Connected Deep Neural Network (DNN), often just called a Deep Neural Network, consists of multiple layers where each neuron in a layer is connected to all neurons in the previous layer. These networks are powerful tools for a wide range of machine learning tasks, including regression and classification. In this tutorial, we'll build a fully connected DNN for a classification task using PyTorch, a popular deep learning library.
@@ -648,9 +649,153 @@ This process effectively measures the model's performance on unseen data, provid
 ## Conclusion
 
 In this tutorial, we built a fully connected deep neural network using PyTorch for the classification of MNIST handwritten digits. This process involved loading and preprocessing the dataset, defining the model, training the model, and evaluating its performance. Fully connected networks are foundational in deep learning and provide a
+
+
+# Streamlining Data Handling in PyTorch
+
+PyTorch's `torch.utils.data` module provides essential tools to load and preprocess data efficiently, enabling seamless integration into your training loop. This tutorial covers the primary components—`Dataset`, `DataLoader`, and transformations—to help you harness the full power of PyTorch for managing data.
+
+## Understanding `torch.utils.data.Dataset`
+
+The `Dataset` class is an abstract class representing a dataset. Your custom datasets should inherit `Dataset` and implement the following methods:
+
+- `__init__(self)`: Initializes the dataset object. Load data here.
+- `__len__(self)`: Returns the size of the dataset.
+- `__getitem__(self, idx)`: Supports the indexing such that `dataset[i]` can be used to get the i-th sample.
+
+### Creating a Custom Dataset
+
+Imagine you have a dataset of images stored in a directory with their labels in a CSV file. Here's how you might implement a custom `Dataset`:
+
+```python
+import os
+import pandas as pd
+from PIL import Image
+from torch.utils.data import Dataset
+
+class CustomImageDataset(Dataset):
+    def __init__(self, annotations_file, img_dir, transform=None):
+        self.img_labels = pd.read_csv(annotations_file)
+        self.img_dir = img_dir
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.img_labels)
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        image = Image.open(img_path).convert("RGB")
+        label = self.img_labels.iloc[idx, 1]
+        if self.transform:
+            image = self.transform(image)
+        return image, label
+```
+
+ In the above code, self.img_labels.iloc[idx, 1] retrieves the value located in the second column of the row specified by idx. .iloc[]: This is a pandas DataFrame method used for integer-location based indexing. 
+
+ Foramt of annotaitons file
+ ```
+filename,label
+image_001.jpg,0
+image_002.jpg,2
+image_003.jpg,1
+image_004.jpg,0
+ ```
+
+## Leveraging `torch.utils.data.DataLoader`
+
+The `DataLoader` takes a dataset and provides an iterable over the dataset, supporting automatic batching, sampling, shuffling, and multiprocessing data loading.
+
+```python
+from torch.utils.data import DataLoader
+
+# Assume CustomImageDataset is defined and instantiated as custom_dataset
+data_loader = DataLoader(dataset=custom_dataset, batch_size=64, shuffle=True, num_workers=4)
+```
+
+### Iterating Through DataLoader
+
+```python
+for images, labels in data_loader:
+    # Perform operations using the batch of images and labels
+```
+
+## Applying Transformations
+
+Data often needs to be transformed to a suitable format before training. PyTorch offers many built-in transformations through `torchvision.transforms`.
+
+```python
+from torchvision import transforms
+
+transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+```
+
+This code snippet  is used to compose several image transformations together. It defines a pipeline of transformations that are applied to an image sequentially. Here's a breakdown of each part:
+
+### `transforms.Compose([...])`
+- `Compose` is a constructor that takes a list of transformations and composes them together. This means that the input image will be passed through each transformation in the order they are listed.
+
+### Transformations:
+1. **`transforms.Resize(256)`**:
+   - This transformation resizes the input image to have a minimum size of 256 pixels, maintaining the aspect ratio. The resizing is done before cropping to ensure the image is large enough to have a meaningful crop and also to standardize the input size for subsequent operations or model requirements.
+
+2. **`transforms.RandomCrop(224)`**:
+   - After resizing, this transformation randomly crops a region of the image with a size of 224x224 pixels. Random cropping is a form of data augmentation, which helps in reducing overfitting by providing slightly different images each time. It's particularly useful for training deep learning models, where diversity in the training data can improve the model's ability to generalize.
+
+3. **`transforms.ToTensor()`**:
+   - This transformation converts the PIL Image or a NumPy `ndarray` into a PyTorch tensor. It also automatically scales the image data to a range of [0, 1] by dividing the intensity values by 255 (as the original PIL Image has values ranging from 0 to 255). This is an important preprocessing step since most neural network models expect input data to be in the form of tensors.
+
+Together, these transformations prepare the image for input into a convolutional neural network (CNN) for tasks like image classification. The image is first resized to ensure a minimum size, then a square crop is randomly selected to provide variability in the training data, and finally, it's converted into a tensor for model processing. This sequence of transformations is a common preprocessing pipeline for training deep learning models on image data, as it helps in regularization and makes the input data compatible with the model architecture.
+
+You can easily integrate these transformations into your custom dataset:
+
+```python
+custom_dataset = CustomImageDataset(annotations_file='labels.csv', img_dir='images/', transform=transform)
+```
+
+## Putting It All Together: An Example
+
+Let's integrate what we've learned into a simple example that loads data, applies transformations, and iterates through the data in batches.
+
+```python
+# Assume CustomImageDataset is already defined and instantiated as custom_dataset
+
+from torch.utils.data import DataLoader
+from torchvision import transforms
+
+# Define transformations
+transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.RandomCrop(224),
+    transforms.ToTensor(),
+])
+
+# Create an instance of our custom dataset with transformations
+dataset = CustomImageDataset(annotations_file='path/to/annotations.csv', img_dir='path/to/images', transform=transform)
+
+# Use DataLoader to handle batching and shuffling
+data_loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True, num_workers=4)
+
+# Iterate through the DataLoader
+for images, labels in data_loader:
+    # Here, you can train your model
+    pass
+```
+
+## Conclusion
+
+`torch.utils.data` module greatly simplifies data handling in PyTorch, making your data pipeline more efficient and readable. By customizing `Dataset` and utilizing `DataLoader`, you can effectively manage diverse data requirements for your machine learning projects. Additionally, the flexibility of transformations allows for powerful data preprocessing and augmentation strategies, ensuring your model receives data in the optimal format for training.
+
+---
 # Tutorial: Understanding CNNs and U-Net Architecture
 
 Convolutional Neural Networks (CNNs) and the U-Net architecture are pivotal in the field of computer vision, especially in tasks like image classification, object detection, and semantic segmentation. This tutorial will guide you through the fundamentals of CNNs, introduce the U-Net architecture, and show how to implement a simple U-Net in PyTorch.
+
 
 ## Part 1: Convolutional Neural Networks (CNNs)
 
@@ -676,219 +821,229 @@ A CNN is a deep learning algorithm that can take an input image, assign importan
 4. **Pooling**: Reduces the spatial dimensions (width, height) of the input volume for the next convolutional layer.
 5. **Fully Connected Layer**: Uses the features extracted by the convolutional layers and downsampled by the pooling to classify the image into various classes based on the training dataset.
 
-## Part 2: U-Net Architecture
+---
+# Part 2: U-Net Architecture
+# Tutorial on U-Net Architecture with PyTorch
 
-### Introduction to U-Net
+The U-Net architecture is a convolutional neural network (CNN) initially designed for biomedical image segmentation tasks. Its structure is characterized by a contracting path to capture context and a symmetric expanding path that enables precise localization. U-Net has proven effective across a range of image segmentation tasks beyond its original biomedical applications.
 
-U-Net is a type of CNN designed for fast and precise segmentation of images. It's named U-Net because of its U-shaped architecture. It was originally developed for biomedical image segmentation but has since been adopted for various image segmentation tasks.
+This tutorial introduces the U-Net architecture and demonstrates how to implement a simplified version using PyTorch.
 
-### Structure of U-Net
+## U-Net Overview
 
-The U-Net architecture is divided into two paths: 
-1. **Contracting Path (Encoder)**: Captures the context in the image. It consists of convolutional layers followed by max-pooling layers to reduce the spatial dimensions.
-2. **Expansive Path (Decoder)**: Enables precise localization using transposed convolutions. This path increases the spatial dimensions of the output.
+U-Net architecture consists of two main parts:
+1. **The Contracting/Downsampling Path**: Captures the context in the image. It consists of repeated application of two 3x3 convolutions (unpadded convolutions), each followed by a rectified linear unit (ReLU) and a 2x2 max pooling operation with stride 2 for downsampling.
+2. **The Expansive/Upsampling Path**: Enables precise localization using transposed convolutions. For every step in the expansive path, it includes a transposed convolution of 2x2 stride 2, followed by two 3x3 convolutions, each followed by a ReLU.
 
-### Skip Connections
+Skip connections are used to concatenate feature maps from the downsampling path to the upsampling path to help the network learn fine-grained details.
 
-One of the key features of U-Net is the use of skip connections that connect the encoder path to the decoder path. These connections help in recovering the spatial context lost during downsampling.
+## Implementation in PyTorch
 
-## Implementing a Simple U-Net in PyTorch
+First, ensure you have PyTorch installed. If not, you can install it by following the instructions on the [official PyTorch website](https://pytorch.org/get-started/locally/).
 
-Let's implement a simplified version of U-Net for educational purposes.
+### Define the U-Net Model
 
-### Setting Up
-
-First, ensure you have PyTorch installed:
-
-```bash
-pip install torch torchvision
-```
-
-### U-Net Implementation
+Here's a simplified version of the U-Net model implemented in PyTorch:
 
 ```python
 import torch
 import torch.nn as nn
 
-class UNet(nn.Module):
+class DoubleConv(nn.Module):
+    """(convolution => [BN] => ReLU) * 2"""
     def __init__(self, in_channels, out_channels):
-        super(UNet, self).__init__()
-        
-        self.encoder = nn.Sequential(
-            nn.Conv2d(in_channels, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            # Add more layers as needed
+        super().__init__()
+        self.double_conv = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True)
         )
-        
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(64, out_channels, kernel_size=2, stride=2),
-            # Add more layers as needed
-        )
-        
-        self.final_conv = nn.Conv2d(out_channels, out_channels, kernel_size=1)
-        
+
     def forward(self, x):
-        x1 = self.encoder(x)
-        x2 = self.decoder(x1)
-        out = self.final_conv(x2)
-        return out
+        return self.double_conv(x)
+
+class UNet(nn.Module):
+    def __init__(self, n_channels, n_classes):
+        super(UNet, self).__init__()
+        self.n_channels = n_channels
+        self.n_classes = n_classes
+        
+        self.inc = DoubleConv(n_channels, 64)
+        self.down1 = DoubleConv(64, 128)
+        self.down2 = DoubleConv(128, 256)
+        self.up1 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
+        self.conv1 = DoubleConv(256, 128)
+        self.up2 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
+        self.conv2 = DoubleConv(128, 64)
+        self.outc = nn.Conv2d(64, n_classes, kernel_size=1)
+
+    def forward(self, x):
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x = self.up1(x3)
+        x = torch.cat([x, x2], dim=1)
+        x = self.conv1(x)
+        x = self.up2(x)
+        x = torch.cat([x, x1], dim=1)
+        x = self.conv2(x)
+        logits = self.outc(x)
+        return logits
 ```
 
-This code defines a simplified version of the U-Net architecture using PyTorch, a deep learning framework. U-Net is a convolutional neural network (CNN) originally designed for biomedical image segmentation tasks. It's known for its ability to work well with very few training images and to produce precise segmentations. Here's a breakdown of the code:
+### Explanation
 
-### Imports
-- **`torch`**: The main PyTorch library.
-- **`torch.nn`**: The neural network module of PyTorch, which contains layers, activation functions, and other components necessary for building neural networks.
+- **`DoubleConv`**: A small module representing two consecutive convolution operations followed by ReLU activations. It simplifies repetitive code and enhances readability.
+- **Initialization (`__init__`)**: The `UNet` class initializes all the components of the U-Net architecture, including the contracting path (`inc`, `down1`, `down2`), the expansive path (`up1`, `up2`, `conv1`, `conv2`), and the final output convolution (`outc`).
+- **Forward Pass (`forward`)**: Defines how the input tensor `x` flows through the network. Notably, after each upsampling, the feature map from the contracting path is concatenated with the upsampled feature map, which are then passed through additional convolutions. This process, combined with the skip connections (the concatenations), helps the network localize features more precisely.
+- **Output**: The network outputs the `logits` for each pixel, indicating the class scores. For segmentation tasks, these logits are usually passed through a softmax function to derive probabilities, which are then used to determine the class of each pixel.
 
-### U-Net Architecture
-- **Class Definition**: The `UNet` class inherits from `nn.Module`, the base class for all neural network modules in PyTorch. This inheritance is necessary for leveraging PyTorch's built-in functions for training and inference.
-  
-- **Constructor (`__init__` method)**:
-  - The constructor takes `in_channels` and `out_channels` as parameters, which specify the number of input channels (e.g., 1 for grayscale images, 3 for RGB images) and the number of output channels (e.g., the number of classes in a segmentation task), respectively.
-  - The `encoder` is defined as a `nn.Sequential` container, which groups several layers into a single module. It includes a convolutional layer (`nn.Conv2d`) for feature extraction, a ReLU activation function for non-linearity, and a max pooling layer (`nn.MaxPool2d`) for downsampling. This setup captures the contracting path of U-Net, responsible for feature extraction.
-  - The `decoder` is another `nn.Sequential` container with a `nn.ConvTranspose2d` layer, which performs the opposite of a convolutional operation, upscaling the feature maps. This is part of the expansive path of U-Net, which reconstructs the output from the encoded features.
-  - `self.final_conv` is a convolutional layer that maps the decoded features to the final output channels. It's used to generate the final segmentation map or output.
+### Using the U-Net Model
 
-### Forward Method (`forward` method)
-- The `forward` method defines how the input data (`x`) flows through the network:
-  - The input is first passed through the `encoder`, resulting in downsampled, feature-rich representations.
-  - These representations are then fed into the `decoder`, which upscales them back to the original input size (or the desired output size).
-  - Finally, `self.final_conv` is applied to the decoded features to produce the final output, matching the number of desired output channels.
-  
-### Key Characteristics
-- **U-Net Structure**: The original U-Net architecture features a symmetric structure with skip connections between the encoder and decoder paths, which are not explicitly shown in this simplified code. These connections help recover spatial information lost during downsampling.
-- **Flexibility**: This code provides a basic structure that can be expanded by adding more layers to both the encoder and decoder as needed, allowing it to adapt to various segmentation tasks.
+To use this U-Net model, you need to instantiate it and provide the number of input channels
 
-### Usage
-This implementation of U-Net can be used for segmentation tasks where each pixel in an input image is classified into one of several classes. By adjusting the `in_channels` and `out_channels`, it can be adapted to different datasets and requirements.
-
-
-Creating training and test code for the U-Net architecture provided requires setting up a dataset suitable for segmentation, a loss function for segmentation tasks, and an optimizer. Given the context, let's simulate a segmentation task using the CIFAR10 dataset from `torchvision.datasets`, noting that CIFAR10 is not a segmentation dataset. This will involve treating class labels as segmentation masks for educational purposes.
-
-### Step 1: Import Necessary Libraries
+ (`n_channels`, e.g., 1 for grayscale images or 3 for RGB images) and the number of output classes (`n_classes`, e.g., the number of segmentation classes in your dataset).
 
 ```python
+model = UNet(n_channels=3, n_classes=2)
+```
+
+### Conclusion
+
+This tutorial presented a simplified implementation of the U-Net architecture in PyTorch. U-Net's design, particularly its use of skip connections and a symmetric structure, makes it especially suited for tasks where precise localization and context capture are critical, such as image segmentation. Experiment with the architecture by adjusting the depth, number of filters, and adding additional features like batch normalization to adapt it to your specific needs.
+
+---
+# Training the U-Net model
+To create a comprehensive tutorial on training and testing a U-Net model for image segmentation, we'll use a simplified dataset scenario for clarity. We'll demonstrate this using the Oxford-IIIT Pet Dataset, focusing on binary segmentation tasks. This tutorial includes data loading, model training, testing, and visualization of the segmented images.
+
+### Step 1: Setup and Data Preparation
+
+First, ensure you have all necessary libraries:
+
+```sh
+pip install torch torchvision matplotlib
+```
+
+We need to modify the dataset loader to load images and their segmentation masks. For simplicity, we'll assume binary segmentation (foreground/background).
+
+```python
+import os
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision import datasets, transforms
+from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
-import torchvision.transforms.functional as TF
+import matplotlib.pyplot as plt
+
+class PetDataset(torch.utils.data.Dataset):
+    def __init__(self, root, train=True, transform=None):
+        self.dataset = datasets.OxfordIIITPet(root=root, split='trainval' if train else 'test', download=True)
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        image, target = self.dataset[idx]
+        mask = binary_mask(target['masks'])
+        
+        if self.transform:
+            image = self.transform(image)
+        
+        return image, mask
+
+def binary_mask(target):
+    target = np.array(target)
+    target[target == 2] = 1  # Combine pet and outline into a single class
+    return torch.tensor(target, dtype=torch.float32).unsqueeze(0)  # Add channel dimension
 ```
 
 ### Step 2: Define the U-Net Model
 
-(Use the U-Net model defined earlier)
+Refer to the previously defined U-Net model. Ensure it's suitable for binary segmentation with the correct input and output channels.
 
-### Step 3: Load and Transform the CIFAR10 Dataset
+### Step 3: Data Loading and Transformation
 
-To simulate segmentation masks, we will transform the CIFAR10 class labels into one-hot encoded masks. Note: this is for demonstration purposes only.
+Define transformations and data loaders:
 
 ```python
 transform = transforms.Compose([
+    transforms.Resize((256, 256)),
     transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
-# CIFAR10 doesn't have segmentation masks, so we'll only use it to simulate the input images.
-train_set = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-train_loader = DataLoader(train_set, batch_size=8, shuffle=True)
+train_dataset = PetDataset(root='data', train=True, transform=transform)
+test_dataset = PetDataset(root='data', train=False, transform=transform)
 
-test_set = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
-test_loader = DataLoader(test_set, batch_size=8, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 ```
 
-### Step 4: Set Up Training
+### Step 4: Model Training
 
-Choose an appropriate loss function and optimizer. For segmentation tasks, a common choice is the CrossEntropyLoss, but remember, CIFAR10 is not truly suitable for segmentation, so the setup is hypothetical.
+Initialize the model, loss function, and optimizer:
 
 ```python
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = UNet(in_channels=3, out_channels=10).to(device)  # Assuming 10 classes for CIFAR10
-criterion = nn.CrossEntropyLoss()
+model = UNet(n_channels=3, n_classes=1).to(device)
+criterion = nn.BCEWithLogitsLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
-```
 
-### Step 5: Training Loop
-
-Implement the training loop. Here, we focus on the mechanics of training without implementing a genuine segmentation task.
-
-```python
-epochs = 10
+# Training loop
+epochs = 5
 for epoch in range(epochs):
+    model.train()
     running_loss = 0.0
-    for images, labels in train_loader:
-        images = images.to(device)
-        labels = labels.long().to(device)  # Simulated "segmentation masks"
-
+    for images, masks in train_loader:
+        images, masks = images.to(device), masks.to(device)
         optimizer.zero_grad()
         outputs = model(images)
-        loss = criterion(outputs, labels)  # Not a valid segmentation loss calculation
+        loss = criterion(outputs, masks)
         loss.backward()
         optimizer.step()
-
         running_loss += loss.item()
-    print(f"Epoch [{epoch+1}/{epochs}], Loss: {running_loss/len(train_loader)}")
+    print(f"Epoch {epoch+1}, Loss: {running_loss/len(train_loader)}")
 ```
 
-### Step 6: Testing Loop
+### Step 5: Testing and Visualization
 
-Implement a basic testing loop to evaluate the model.
+After training, evaluate the model on the test set and visualize the segmentation results:
 
 ```python
 model.eval()
 with torch.no_grad():
-    correct = 0
-    total = 0
-    for images, labels in test_loader:
-        images = images.to(device)
-        labels = labels.to(device)
+    for images, masks in test_loader:
+        images, masks = images.to(device), masks.to(device)
         outputs = model(images)
-        _, predicted = torch.max(outputs, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
+        outputs = torch.sigmoid(outputs)
+        outputs[outputs >= 0.5] = 1
+        outputs[outputs < 0.5] = 0
+        break  # Process one batch for visualization
 
-    print(f'Accuracy on the 10000 test images: {100 * correct // total} %')
+# Visualization
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 3, 1)
+plt.imshow(np.transpose(images[0].cpu().numpy(), (1, 2, 0)))
+plt.title('Original Image')
+plt.axis('off')
+
+plt.subplot(1, 3, 2)
+plt.imshow(masks[0].cpu().squeeze(), cmap='gray')
+plt.title('True Mask')
+plt.axis('off')
+
+plt.subplot(1, 3, 3)
+plt.imshow(outputs[0].cpu().squeeze(), cmap='gray')
+plt.title('Predicted Mask')
+plt.axis('off')
+plt.show()
 ```
-
-### Note:
-- The use of CIFAR10 here is purely illustrative. A real segmentation task requires a dataset with segmentation masks.
-- The "labels" used in this context are class labels from CIFAR10, not actual segmentation masks. In a genuine segmentation task, labels would be per-pixel class annotations.
-- To train and test a U-Net model properly, use a dataset designed for segmentation, such as PASCAL VOC or MS COCO.
-### Imports
-- **`torch`**: The main PyTorch library.
-- **`torch.nn`**: The neural network module of PyTorch, which contains layers, activation functions, and other components necessary for building neural networks.
-
-### U-Net Architecture
-- **Class Definition**: The `UNet` class inherits from `nn.Module`, the base class for all neural network modules in PyTorch. This inheritance is necessary for leveraging PyTorch's built-in functions for training and inference.
-  
-- **Constructor (`__init__` method)**:
-  - The constructor takes `in_channels` and `out_channels` as parameters, which specify the number of input channels (e.g., 1 for grayscale images, 3 for RGB images) and the number of output channels (e.g., the number of classes in a segmentation task), respectively.
-  - The `encoder` is defined as a `nn.Sequential` container, which groups several layers into a single module. It includes a convolutional layer (`nn.Conv2d`) for feature extraction, a ReLU activation function for non-linearity, and a max pooling layer (`nn.MaxPool2d`) for downsampling. This setup captures the contracting path of U-Net, responsible for feature extraction.
-  - The `decoder` is another `nn.Sequential` container with a `nn.ConvTranspose2d` layer, which performs the opposite of a convolutional operation, upscaling the feature maps. This is part of the expansive path of U-Net, which reconstructs the output from the encoded features.
-  - `self.final_conv` is a convolutional layer that maps the decoded features to the final output channels. It's used to generate the final segmentation map or output.
-
-### Forward Method (`forward` method)
-- The `forward` method defines how the input data (`x`) flows through the network:
-  - The input is first passed through the `encoder`, resulting in downsampled, feature-rich representations.
-  - These representations are then fed into the `decoder`, which upscales them back to the original input size (or the desired output size).
-  - Finally, `self.final_conv` is applied to the decoded features to produce the final output, matching the number of desired output channels.
-  
-### Key Characteristics
-- **U-Net Structure**: The original U-Net architecture features a symmetric structure with skip connections between the encoder and decoder paths, which are not explicitly shown in this simplified code. These connections help recover spatial information lost during downsampling.
-- **Flexibility**: This code provides a basic structure that can be expanded by adding more layers to both the encoder and decoder as needed, allowing it to adapt to various segmentation tasks.
-
-### Usage
-This implementation of U-Net can be used for segmentation tasks where each pixel in an input image is classified into one of several classes. By adjusting the `in_channels` and `out_channels`, it can be adapted to different datasets and requirements.
-
-This code defines a very basic structure of U-Net for demonstration purposes. Real-world applications often require a more complex structure, including multiple layers in both the encoder and decoder paths and implementing skip connections to combine features from the encoder path with the upsampled features in the decoder path.
 
 ### Conclusion
 
-This tutorial provided an overview of CNNs, introduced the U-Net architecture, and demonstrated how to implement a basic U-Net in PyTorch. U-Net's design, particularly its use of skip connections, makes it effective for tasks requiring precise localization, such as image segmentation. As with any deep learning model, the effectiveness
-
-# FAQ
+This tutorial covered creating a U-Net model for image segmentation, focusing on a binary segmentation task using the Oxford-IIIT Pet Dataset. We went through data preparation, model definition, training, and testing, concluding with the visualization of segmentation results. Note that for real-world applications, further fine-tuning, data augmentation, and evaluation metrics are essential for achieving high performance.# FAQ
 
 ## How pytorch loss backward function knows location of parameters ?
 
